@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width" />
+    <title>HELLO, AMAP!</title>
+    <style>
+      html, body, #container {
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+    <script src="https://webapi.amap.com/maps?v=1.4.15&key=534ea06b44646589a2f8803b5cbf3f63&plugin=AMap.Driving"></script>
+    <script src="https://webapi.amap.com/ui/1.0/main.js"></script>
+  </head>
+  <body>
+    <div id="container"></div>
+    <script>
+      const map = new AMap.Map("container", {
+        viewMode: "2D",
+        zoom: 11,
+        center: [118.795153, 32.054246],
+      });
+
+      let pathData = { name: "实时路线", path: [] };
+      // 定义圆心坐标数组和对应的文字内容
+const circlesData = [
+    { coord: [118.70445124895137,32.13399786214337], text: "前方塌方" },
+    { coord: [118.68646450681904,32.108321895081204], text: "前方泥石流" },
+    { coord: [118.66609553783105,32.09132960608834], text: "前方积水" },
+    { coord: [118.63956661219133,32.06226315428525], text: "前方冰雪路面" },
+    { coord: [118.62281309261941,32.04238205962386], text: "前方道路施工" },
+    { coord: [118.58307113436784,32.03432378598331], text: "前方车辆事故" },
+        { coord: [118.56680181713736,32.03262474636293], text: "前方低能见度" },
+    { coord: [118.5493224348282,32.0298995068143], text: "前方滑坡" },
+        { coord: [118.54619311472428,32.03786088154059], text: "前方落石" },
+    { coord: [118.57422269397179,32.04672399219685], text: "前方强风" },
+        { coord: [118.5976980623462,32.07121135419102], text: "前方坑洞" },
+    { coord: [118.61185833408436,32.080713363474864], text: "前方油污路面" },
+        { coord: [118.59901155175879,32.089246556180726], text: "前方水渠泄漏" }
+];
+
+// 循环添加多个圆和文字标注
+circlesData.forEach(data => {
+    const circle = new AMap.Circle({
+        center: data.coord,
+        radius: 500,
+        strokeColor: "red",
+        strokeOpacity: 0.8,
+        fillColor: "red",
+        fillOpacity: 0.3,
+    });
+    map.add(circle);
+
+    const marker = new AMap.Marker({
+        position: data.coord,
+        content: `<div style="color: red; font-size: 16px;">${data.text}</div>`,
+        offset: new AMap.Pixel(0, 0),
+    });
+    map.add(marker);
+});
+
+
+      AMapUI.load(["ui/misc/PathSimplifier", "lib/$"], function (PathSimplifier, $) {
+        const pathSimplifierIns = new PathSimplifier({
+          zIndex: 100,
+          map: map,
+          getPath: function (pathData) {
+            return pathData.path;
+          },
+          renderOptions: {
+            renderAllPointsIfNumberBelow: 100,
+          },
+        });
+
+        function updateCoordinates() {
+          fetch('coordinates.txt')
+            .then(response => response.text())
+            .then(text => {
+              const coordinates = text.split('\n').map(line => line.split(',').map(Number)).filter(coord => coord.length === 2);
+              if (JSON.stringify(coordinates) !== JSON.stringify(pathData.path)) {
+                pathData.path = coordinates;
+                pathSimplifierIns.setData([pathData]);
+                if (coordinates.length > 0) {
+                  map.setCenter(coordinates[coordinates.length - 1]);
+                  map.setZoom(20);
+                }
+              }
+            });
+        }
+
+        setInterval(updateCoordinates, 1000); // 每隔1秒更新一次
+      });
+    </script>
+  </body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
