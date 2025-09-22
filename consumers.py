@@ -701,3 +701,4 @@ class SOSConsumer(WebsocketConsumer):
         global stop_flag
         stop_flag[self] = True                                                # 设置标志位，表示断联
         raise StopConsumer()                                                    # 抛出异常，停止线程
+
